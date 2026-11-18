@@ -1,4 +1,5 @@
-<img width="1911" height="776" alt="2026-11-18_11-06-32" src="https://github.com/user-attachments/assets/4f013d20-e253-4916-b93e-0eca4fb86172" />
+<img width="1905" height="779" alt="2026-11-18_11-09-46" src="https://github.com/user-attachments/assets/6972b7c2-eb1c-455a-9fad-0ec3d7aad016" />
+
 
 
 # Finance Reports
@@ -33,32 +34,25 @@
 - itsdangerous
 
 ## Запуск
-Создать виртуальное окружение:
-
 ```bash
+Создать виртуальное окружение:
 python -m venv .venv
-
 
 Активировать окружение:
 Для Windows:
 .venv\Scripts\activate
 
-
 Для Linux/macOS:
 source .venv/bin/activate
-
 
 Установить зависимости:
 pip install -r requirements.txt
 
-
 Запустить приложение:
 uvicorn app.main:app --reload
 
-
 Открыть:
 http://127.0.0.1:8000
-
 
 
 Тестовые учётные записи:
