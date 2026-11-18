@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="h4 mb-4">
+    Заказ {{ order.order_number }}
+</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p>
+                    <strong>Дата заказа:</strong><br>
+                    {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}
+                </p>
+
+                <p>
+                    <strong>Статус:</strong><br>
+                    {{ ORDER_STATUS_LABELS.get(order.status, order.status) }}
+                </p>
+
+                <p>
+                    <strong>Сумма заказа:</strong><br>
+                    {{ '%.2f' % (order.total_amount_kop / 100) }} ₽
+                </p>
+            </div>
+
+            <div class="col-md-6">
+                <p>
+                    <strong>Клиент:</strong><br>
+                    {{ customer.full_name }}
+                </p>
+
+                <p>
+                    <strong>Email:</strong><br>
+                    {{ customer.email }}
+                </p>
+
+                <p>
+                    <strong>Телефон:</strong><br>
+                    {{ customer.phone }}
+                </p>
+
+                <p>
+                    <strong>Адрес:</strong><br>
+                    {{ customer.address }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Платежи</h2>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID платежа</th>
+                        <th>Способ</th>
+                        <th>Создан</th>
+                        <th>Оплачен</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Карта</th>
+                        <th>Комиссия</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in payment_rows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Возвраты</h2>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID возврата</th>
+                        <th>Дата</th>
+                        <th>Сумма</th>
+                        <th>Тип</th>
+                        <th>Статус</th>
+                        <th>Причина</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in refund_rows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Итоги</h2>
+
+        <p>
+            <strong>Оплачено:</strong>
+            {{ totals.paid }}
+        </p>
+
+        <p>
+            <strong>Возвращено:</strong>
+            {{ totals.refunded }}
+        </p>
+
+        <p class="mb-0">
+            <strong>Итог:</strong>
+            {{ totals.net }}
+        </p>
+    </div>
+</div>
+{% endblock %}

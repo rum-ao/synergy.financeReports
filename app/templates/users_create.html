@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="h4 mb-4">Создать пользователя</h1>
+
+{% if error %}
+<div class="alert alert-danger">
+    {{ error }}
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" action="/users/create">
+            <div class="mb-3">
+                <label class="form-label">Логин</label>
+                <input
+                    type="text"
+                    name="username"
+                    class="form-control"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Пароль</label>
+                <input
+                    type="password"
+                    name="password"
+                    class="form-control"
+                    required
+                >
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Роль</label>
+                <select name="role" class="form-select" required>
+                    {% for role_value, role_label in roles %}
+                    <option value="{{ role_value }}">
+                        {{ role_label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Создать
+            </button>
+
+            <a class="btn btn-secondary" href="/users">
+                Отмена
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

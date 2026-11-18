@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="h4 mb-4">Отчёты</h1>
+
+<div class="list-group">
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>Сводный отчёт</span>
+        <span>
+            <a class="btn btn-sm btn-primary" href="/reports/summary">Открыть</a>
+
+            {% if can_export %}
+            <a class="btn btn-sm btn-outline-secondary" href="/reports/export/summary">CSV</a>
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>Отчёт по дням</span>
+        <span>
+            <a class="btn btn-sm btn-primary" href="/reports/daily">Открыть</a>
+
+            {% if can_export %}
+            <a class="btn btn-sm btn-outline-secondary" href="/reports/export/daily">CSV</a>
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>Отчёт по способам оплаты</span>
+        <span>
+            <a class="btn btn-sm btn-primary" href="/reports/payment-methods">Открыть</a>
+
+            {% if can_export %}
+            <a class="btn btn-sm btn-outline-secondary" href="/reports/export/payment_methods">CSV</a>
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>Отчёт по возвратам</span>
+        <span>
+            <a class="btn btn-sm btn-primary" href="/reports/refunds">Открыть</a>
+
+            {% if can_export %}
+            <a class="btn btn-sm btn-outline-secondary" href="/reports/export/refunds">CSV</a>
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>Отчёт по частичным возвратам</span>
+        <span>
+            <a class="btn btn-sm btn-primary" href="/reports/partial-refunds">Открыть</a>
+
+            {% if can_export %}
+            <a class="btn btn-sm btn-outline-secondary" href="/reports/export/partial_refunds">CSV</a>
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>Отчёт по заказам</span>
+        <span>
+            <a class="btn btn-sm btn-primary" href="/reports/orders">Открыть</a>
+
+            {% if can_export %}
+            <a class="btn btn-sm btn-outline-secondary" href="/reports/export/orders">CSV</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}

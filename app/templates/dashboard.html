@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 mb-0">Дашборд</h1>
+    <span class="text-muted small">Октябрь 2026 · 100 заказов</span>
+</div>
+
+<div class="row g-3 mb-4">
+    {% for card in cards %}
+    <div class="col-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">{{ card.label }}</div>
+                <div class="kpi-value">{{ card.value }}</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-xl-8">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="card-title fw-semibold mb-3">
+                    Динамика выручки и возвратов по дням
+                </div>
+                <div class="chart-box"><canvas id="dailyChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="card-title fw-semibold mb-3">
+                    Структура способов оплаты
+                </div>
+                <div class="chart-box"><canvas id="methodsChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-xl-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="card-title fw-semibold mb-3">
+                    Сумма возвратов по типам
+                </div>
+                <div class="chart-box"><canvas id="refundsChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="card-title fw-semibold mb-3">
+                    Заказы по статусам
+                </div>
+                <div class="chart-box"><canvas id="statusChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="card-title fw-semibold mb-3">Быстрые ссылки на отчёты</div>
+                <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action px-0" href="/reports/summary">Сводный отчёт</a>
+                    <a class="list-group-item list-group-item-action px-0" href="/reports/daily">Отчёт по дням</a>
+                    <a class="list-group-item list-group-item-action px-0" href="/reports/payment-methods">Отчёт по способам оплаты</a>
+                    <a class="list-group-item list-group-item-action px-0" href="/reports/refunds">Отчёт по возвратам</a>
+                    <a class="list-group-item list-group-item-action px-0" href="/reports/partial-refunds">Отчёт по частичным возвратам</a>
+                    <a class="list-group-item list-group-item-action px-0" href="/reports/orders">Отчёт по заказам</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chart-box {
+        position: relative;
+        height: 320px;
+        width: 100%;
+    }
+    .chart-empty {
+        height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: .9rem;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    const serverData = {{ charts | tojson }};
+    
+    const charts = serverData || {
+        daily: { labels: [], paid: [], refunded: [], refund_share: [] },
+        methods: { labels: [], values: [] },
+        refunds: { labels: [], values: [] },
+        statuses: { labels: [], values: [] }
+    };
+    const palette = {
+        purple: "#8b5cf6",
+        teal: "#14b8a6",
+        amber: "#f59e0b",
+        green: "#10b981",
+        blue: "#3b82f6",
+        pink: "#ec4899",
+        gray: "#64748b"
+    };
+
+    const rubFormatter = new Intl.NumberFormat("ru-RU", {
+        maximumFractionDigits: 0
+    });
+
+    function rubTicks(value) {
+        if (value === null || value === undefined) return "";
+        if (value >= 1000000) return (value / 1000000).toFixed(1) + "M";
+        if (value >= 1000) return (value / 1000).toFixed(0) + "K";
+        return value;
+    }
+
+    function safeArray(arr) {
+        return Array.isArray(arr) ? arr : [];
+    }
+
+    function safeFormatRub(value) {
+        if (value === null || value === undefined || isNaN(value)) return "0 ₽";
+        return rubFormatter.format(value) + " ₽";
+    }
+
+    const daily = charts.daily || {};
+    const dailyLabels = safeArray(daily.labels);
+    const dailyPaid = safeArray(daily.paid);
+    const dailyRefunded = safeArray(daily.refunded);
+    const dailyShare = safeArray(daily.refund_share);
+
+    if (dailyLabels.length > 0) {
+        new Chart(document.getElementById("dailyChart"), {
+            type: "bar",
+            data: {
+                labels: dailyLabels,
+                datasets: [
+                    {
+                        label: "Оплаты, ₽",
+                        data: dailyPaid,
+                        backgroundColor: palette.purple,
+                        borderRadius: 4,
+                        order: 2
+                    },
+                    {
+                        label: "Возвраты, ₽",
+                        data: dailyRefunded,
+                        backgroundColor: palette.teal,
+                        borderRadius: 4,
+                        order: 3
+                    },
+                    {
+                        label: "Доля возвратов, %",
+                        data: dailyShare,
+                        type: "line",
+                        borderColor: palette.amber,
+                        backgroundColor: palette.amber,
+                        yAxisID: "y1",
+                        tension: 0.35,
+                        pointRadius: 3,
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                scales: {
+                    y: {
+                        ticks: { callback: rubTicks },
+                        grid: { color: "rgba(17, 24, 39, .06)" }
+                    },
+                    y1: {
+                        position: "right",
+                        grid: { drawOnChartArea: false },
+                        ticks: { callback: v => v + "%" }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: {
+                        position: "top",
+                        labels: { boxWidth: 12, boxHeight: 12 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                if (ctx.dataset.yAxisID === "y1") {
+                                    return ctx.dataset.label + ": " + ctx.parsed.y + "%";
+                                }
+                                return ctx.dataset.label + ": " + safeFormatRub(ctx.parsed.y);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById("dailyChart").parentNode.innerHTML =
+            '<div class="chart-empty">Нет данных по оплатам за выбранный период</div>';
+    }
+
+    const methods = charts.methods || {};
+    const methodsLabels = safeArray(methods.labels);
+    const methodsValues = safeArray(methods.values);
+
+    if (methodsLabels.length > 0) {
+        new Chart(document.getElementById("methodsChart"), {
+            type: "doughnut",
+            data: {
+                labels: methodsLabels,
+                datasets: [{
+                    data: methodsValues,
+                    backgroundColor: [palette.purple, palette.teal, palette.amber],
+                    borderWidth: 2,
+                    borderColor: "#ffffff"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "62%",
+                plugins: {
+                    legend: { position: "bottom" },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.label + ": " + safeFormatRub(ctx.parsed)
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById("methodsChart").parentNode.innerHTML =
+            '<div class="chart-empty">Нет данных по способам оплаты</div>';
+    }
+
+    const refunds = charts.refunds || {};
+    const refundsLabels = safeArray(refunds.labels);
+    const refundsValues = safeArray(refunds.values);
+
+    if (refundsLabels.length > 0) {
+        new Chart(document.getElementById("refundsChart"), {
+            type: "bar",
+            data: {
+                labels: refundsLabels,
+                datasets: [{
+                    data: refundsValues,
+                    backgroundColor: [palette.pink, palette.blue],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => safeFormatRub(ctx.parsed.x)
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { callback: rubTicks },
+                        grid: { color: "rgba(17, 24, 39, .06)" }
+                    },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    } else {
+        document.getElementById("refundsChart").parentNode.innerHTML =
+            '<div class="chart-empty">Нет данных по возвратам</div>';
+    }
+
+    const statuses = charts.statuses || {};
+    const statusesLabels = safeArray(statuses.labels);
+    const statusesValues = safeArray(statuses.values);
+
+    if (statusesLabels.length > 0) {
+        const statusColors = {
+            "Оплачен": palette.green,
+            "Частичный возврат": palette.amber,
+            "Полный возврат": palette.pink,
+            "Отменён": palette.gray
+        };
+
+        new Chart(document.getElementById("statusChart"), {
+            type: "bar",
+            data: {
+                labels: statusesLabels,
+                datasets: [{
+                    data: statusesValues,
+                    backgroundColor: statusesLabels.map(
+                        label => statusColors[label] || palette.blue
+                    ),
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        grid: { color: "rgba(17, 24, 39, .06)" },
+                        ticks: { precision: 0 }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    } else {
+        document.getElementById("statusChart").parentNode.innerHTML =
+            '<div class="chart-empty">Нет данных по статусам</div>';
+    }
+</script>
+{% endblock %}
